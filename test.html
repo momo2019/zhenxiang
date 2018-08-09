@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Page Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="./gif.js"></script>
+    <style>
+        ul {
+            padding: 0;
+            list-style: none;
+        }
+        ul > li {
+            margin: 10px 0;
+        }
+        ul > li > input {
+            margin-left: 10px;
+        }
+        .use-box {
+            margin-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="use-box">
+        <ul>
+            <li>
+                <span>第一句话:</span>
+                <input type="text" name="text" value="我今天就是饿死">
+            </li>
+            <li>
+                <span>第二句话:</span>
+                <input type="text" name="text" value="从这跳下去">
+            </li>
+            <li>
+                <span>第三句话:</span>
+                <input type="text" name="text" value="也不吃一口东西">
+            </li>
+            <li>
+                <span>第四句话:</span>
+                <input type="text" name="text" value="真香">
+            </li>
+            <!-- <li>
+                <span>生成的gif质量(请输入10-30之间的数字，数字越小清晰度越高)</span>
+                <input type="text" name="text" value="10">
+            </li> -->
+        </ul>
+        <button id="btn">生成</button>
+        <span id="tishi"></span>
+    </div>
+    <video hidden="hidden" id="video" src="./sc_wjz.mp4" controls></video>
+    <br>
+    <canvas id="cvs"></canvas>
+    <img id="img" src="" alt="">
+
+
+    <script>
+        var videoElement = document.getElementById('video');
+        var canvasElement = document.getElementById('cvs');
+        var imageElement = document.getElementById('img');
+        var btnElement = document.getElementById('btn');
+        var tishiElement = document.getElementById('tishi');
+        var qualitytext = [];
+        var gifWidth = 300;
+        var gifHeight = 184;
+        var ctx = canvasElement.getContext('2d');
+        var gif;
+
+        btnElement.addEventListener('click',function(){
+            var quality = 10;
+            text = handleText(document.getElementsByName('text'));
+            // quality = parseInt(text[5]);
+            // if(quality < 10){
+            //     quality = 10;
+            // }else if(quality > 30){
+            //     quality = 30;
+            // }
+            gif = new GIF({
+                workers: 2,
+                quality: quality,
+                width: gifWidth,
+                height: gifHeight,
+                workerScript: './gif.worker.js',
+            });
+            videoElement.play();
+        })
+        
+        videoElement.addEventListener('play', function () {
+            canvasElement.width = gifWidth;
+            canvasElement.height = gifHeight;
+            ctx.font="20px Georgia";
+            ctx.strokeStyle = '#ffffff';
+
+            tishiElement.innerText = '正在生成中...请稍后'
+            
+            var i = window.setInterval(function () {
+                var top = 160;
+                var left = 0;
+                var index = -1;
+                ctx.drawImage(videoElement, 0, 0, gifWidth, gifHeight);
+                if(videoElement.currentTime < 1.5){
+                    index = 0;
+                }else if (videoElement.currentTime < 3){
+                    index = 1;
+                }else if (videoElement.currentTime < 4.8){
+                    index = 2;
+                }else{
+                    index = 3;
+                }
+                left = ( gifWidth - (20 * text[index].split('').length) )/2;
+                ctx.strokeText(text[index],left,top);
+                if (videoElement.ended) {
+                    clearInterval(i)
+                }
+            }, 20);
+            setTimeout(function(){
+                make()
+            },20);
+        },false)
+
+        function make(){
+            var zhen = 25;
+            for(var i = 0; i < 6.5 * zhen; i++){
+                gif.addFrame(canvasElement, { delay: 1000 / zhen });
+            }
+            gif.on('finished', function (blob) {
+                imageElement.src = URL.createObjectURL(blob)
+                tishiElement.innerText = '请右击第二张图并保存。'
+            });
+            gif.render();
+        }
+        function handleText(els){
+            var temp = [];
+            els.forEach(function(value){
+                temp.push(value.value);
+            })
+            return temp;
+        }
+    </script>
+</body>
+</html>
