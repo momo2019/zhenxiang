@@ -126,7 +126,7 @@
             }
             gif.on('finished', function (blob) {
                 imageElement.src = URL.createObjectURL(blob)
-                tishiElement.innerText = '请右击第二张图并保存。'
+                tishiElement.innerText = '请右击第二张图并保存。(如果第二张图没有出现或生成效果不好，请重新点击生成按钮)'
             });
             gif.render();
         }
